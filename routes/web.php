@@ -1,5 +1,8 @@
 <?php
 
+use App\Mail\SendToAccount;
+use App\Models\Account;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +16,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', function (string $name) {
+    $account = Account::query()->where('name', $name)->firstOrFail(); /** @var Account $account */
+
+    foreach ($account->simCards as $simCard) {
+        if (!$simCard->is_active) continue;
+
+        Mail::to($account)->queue(new SendToAccount($simCard));
+    }
+//    return view('welcome');
 });
